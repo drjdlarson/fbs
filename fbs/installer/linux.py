@@ -22,6 +22,7 @@ def generate_installer_files():
 
 def run_fpm(output_type):
     dest = path('target/${installer}')
+    dest = dest.replace(dest[-4:], "{}{}".format(SETTINGS["version"], dest[-4:]))
     if exists(dest):
         remove(dest)
     # Lower-case the name to avoid the following fpm warning:
@@ -59,7 +60,10 @@ def run_fpm(output_type):
     if is_arch_linux():
         for opt_dependency in SETTINGS['depends_opt']:
             args.extend(['--pacman-optional-depends', opt_dependency])
+    if SETTINGS["after-install"]:
+        args.extend(["--after-install", SETTINGS["after-install"]])
     try:
+        print(' '.join(args))
         run(args, check=True, stdout=DEVNULL)
     except FileNotFoundError:
         raise FileNotFoundError(
